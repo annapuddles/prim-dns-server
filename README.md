@@ -144,10 +144,28 @@ Sent when the prim-dns server is granted a temporary URL by the region.
 link_message(integer sender, integer num, string str, key id)
 {    
     if (llJsonGetValue(str, ["method"]) == "prim-dns:url-request-granted")
+    {        
+        llOwnerSay("The prim-dns server was granted a URL: " + llJsonGetValue(str, ["params", "url"]));
+    }
+}
+```
+
+# prim-dns:alias-registered (alias)
+
+Sent when the prim-dns server successfully registers or updates its alias.
+
+## Parameters
+
+- `alias` The endpoint URL of the registered alias.
+
+## Example
+
+```lsl
+link_message(integer sender, integer num, string str, key id)
+{
+    if (llJsonGetValue(str, ["method"]) == "prim-dns:alias-registered")
     {
-        string url = llJsonGetValue(str, ["params", "url"]);
-        
-        llOwnerSay("The prim-dns server was granted a URL: " + url);
+        llOwnerSay("The alias was successfully registered: " + llJsonGetValue(str, ["params", "alias"]));
     }
 }
 ```
