@@ -1,6 +1,6 @@
-json_link_message(integer link, string method, list params)
-{    
-    llMessageLinked(link, 0, llList2Json(JSON_OBJECT, ["method", method, "params", llList2Json(JSON_OBJECT, params)]), NULL_KEY);
+jsonrpc_link_notification(integer link, string method, string params_type, list params)
+{
+    llMessageLinked(link, 0, llList2Json(JSON_OBJECT, ["jsonrpc", "2.0", "method", method, "params", llList2Json(params_type, params)]), NULL_KEY);
 }
 
 default
@@ -16,7 +16,7 @@ default
         string method = llJsonGetValue(str, ["params", "method"]);
         string body = llJsonGetValue(str, ["params", "body"]);
         
-        json_link_message(sender, "prim-dns:set-content-type", ["request-id", request_id, "content-type", CONTENT_TYPE_HTML]);
-        json_link_message(sender, "prim-dns:response", ["request-id", request_id, "status", 200, "body", "<b>Hello, world!</b>"]);
+        jsonrpc_link_notification(sender, "prim-dns:set-content-type", JSON_OBJECT, ["request-id", request_id, "content-type", CONTENT_TYPE_HTML]);
+        jsonrpc_link_notification(sender, "prim-dns:response", JSON_OBJECT, ["request-id", request_id, "status", 200, "body", "<b>Hello, world!</b>"]);
     }
 }
