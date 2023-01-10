@@ -3,15 +3,29 @@
 The prim-dns script received an HTTP request.
 
 ## Parameters
+
 - `request-id` The key of the request.
 - `method` The HTTP method of the request.
 - `body` The body of the request.
+
+## Example
+
+```lsl
+link_message(integer sender, integer num, string str, key id)
+{    
+    if (llJsonGetValue(str, ["method"]) == "prim-dns:request")
+    {   
+        jsonrpc_link_notification(sender, "prim-dns:response", ["request-id", request_id, "status", 200, "body", "Hello, world!"]);
+    }
+}
+```
 
 # prim-dns:set-content-type (request-id, content-type)
 
 Set the content type of the response.
 
 ## Parameters
+
 - `request-id` The key of the request to set the response content type for.
 - `content-type` One of the supported content type constants.
 
@@ -36,6 +50,7 @@ llMessageLinked(LINK_THIS, 0, message, NULL_KEY);
 Send the response.
 
 ## Parameters
+
 - `request-id` The key of the request to respond to.
 - `status` The HTTP status code of the response.
 - `body` The body of the response.
@@ -89,9 +104,23 @@ llMessageLinked(LINK_THIS, 0, message, NULL_KEY);
 
 Sent when the prim-dns server finishes reading the configuration and is waiting to continue starting up. If auto_start = 1, then the server will immediately continue, otherwise it will wait for the prim-dns:start messsage.
 
+## Example
+
+```lsl
+link_message(integer sender, integer num, string str, key id)
+{    
+    if (llJsonGetValue(str, ["method"]) == "prim-dns:startup")
+    {
+        llOwnerSay("The prim-dns server is now waiting to start.");
+    }
+}
+```
+
 # prim-dns:start ()
 
 Tell the prim-dns server to complete its startup.
+
+## Example 
 
 ```lsl
 string message = llList2Json(JSON_OBJECT, [
@@ -99,4 +128,26 @@ string message = llList2Json(JSON_OBJECT, [
 ]);
 
 llMessageLinked(LINK_THIS, 0, message, NULL_KEY);
+```
+
+# prim-dns:url-request-granted (url)
+
+Sent when the prim-dns server is granted a temporary URL by the region.
+
+## Parameters
+
+- `url` The temporary URL assigned to the script.
+
+## Example
+
+```lsl
+link_message(integer sender, integer num, string str, key id)
+{    
+    if (llJsonGetValue(str, ["method"]) == "prim-dns:url-request-granted")
+    {
+        string url = llJsonGetValue(str, ["params", "url"]);
+        
+        llOwnerSay("The prim-dns server was granted a URL: " + url);
+    }
+}
 ```
