@@ -1,0 +1,17 @@
+# The URL for the prim-dns API
+api = https://annapuddles.com/prim-dns/alias
+
+# The name of the alias to register/update. If none is specified, the key of the prim is used.
+alias = 
+
+# The authorization string for the registered alias.
+auth = 
+
+# Whether to use a secure (https) or insecure (http) URL.
+secure_url = 0
+
+# How often to update the status text. 0 will disable the text completely.
+status_update_interval = 1
+
+# Whether to automatically start the server, or wait for another script to start it.
+auto_start = 1
