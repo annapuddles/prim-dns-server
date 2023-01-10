@@ -34,12 +34,6 @@ integer dialog_channel = -872;
 /* Listener for dialogs. */
 integer dialog_listener;
 
-/* Send a JSON-RPC-like message to linked prims. */
-json_link_message(integer link, string method, list params)
-{
-    llMessageLinked(link, 0, llList2Json(JSON_OBJECT, ["method", method, "params", llList2Json(JSON_OBJECT, params)]), NULL_KEY);
-}
-
 /* Request a URL, either secure or insecure based on the use_secure_url setting. */
 start_url_request()
 {
@@ -117,6 +111,12 @@ change_setting(string setting, string value)
     {
         auto_start = (integer) value;
     }
+}
+
+/* Send a JSON-RPC notification to other scripts. */
+jsonrpc_link_notification(integer link, string method, string params_type, list params)
+{
+    llMessageLinked(link, 0, llList2Json(JSON_OBJECT, ["jsonrpc", "2.0", "method", method, "params", llList2Json(params_type, params)]), NULL_KEY);
 }
 
 default
@@ -207,7 +207,7 @@ state startup
     {
         llSetText("Waiting for startup...", <1, 1, 1>, 1);
         
-        json_link_message(LINK_THIS, "prim-dns:startup", []);
+        jsonrpc_link_notification(LINK_THIS, "prim-dns:startup", JSON_OBJECT, []);
         
         if (auto_start)
         {
@@ -237,6 +237,12 @@ state startup
     touch_start(integer detected)
     {
         key toucher = llDetectedKey(0);
+    
+        if (toucher != llGetOwner())
+        {
+            return;
+        }
+        
         llListenRemove(dialog_listener);
         dialog_listener = llListen(dialog_channel, "", toucher, "");
         llDialog(toucher, "What would you like to do?", ["reboot", "shutdown", "cancel"], dialog_channel);
@@ -285,6 +291,8 @@ state request_url
         {
             temporary_url = body;
             llOwnerSay("URL request granted: " + temporary_url);
+            
+            jsonrpc_link_notification(LINK_THIS, "prim-dns:url-request-granted", JSON_OBJECT, ["url", temporary_url]);
             
             /* Use the obtained temporary URL and auth string to update the permanent URL alias */
             
@@ -338,18 +346,21 @@ state request_url
         if (status == 200)
         {
             string auth = llJsonGetValue(body, ["auth"]);
+            string endpoint = llJsonGetValue(body, ["endpoint"]);
             
             /* If not auth string is returned in the response, then we must be updating an existing alias. */
             if (auth == JSON_INVALID)
             {
-                llOwnerSay("Server URL updated successfully for " + llJsonGetValue(body, ["endpoint"]));
+                llOwnerSay("Server URL updated successfully for " + endpoint);
             }
             /* If an auth string is returned, this must be a new alias. */
             else
             {
-                llOwnerSay("Server URL registered successfully at " + llJsonGetValue(body, ["endpoint"]));
+                llOwnerSay("Server URL registered successfully at " + endpoint);
                 llOwnerSay("****************************************\nCOPY THIS LINE INTO THE config NOTECARD:\n\nauth = " + llJsonGetValue(body, ["auth"]) + "\n\n****************************************");
             }
+
+            jsonrpc_link_notification(LINK_THIS, "prim-dns:alias-registered", JSON_OBJECT, ["alias", endpoint]);
             
             state main;
         }
@@ -372,6 +383,12 @@ state request_url
     touch_start(integer detected)
     {
         key toucher = llDetectedKey(0);
+        
+        if (toucher != llGetOwner())
+        {
+            return;
+        }
+        
         llListenRemove(dialog_listener);
         dialog_listener = llListen(dialog_channel, "", toucher, "");
         llDialog(toucher, "What would you like to do?", ["reboot", "shutdown", "cancel"], dialog_channel);
@@ -475,7 +492,7 @@ state main
     /* Pass the request data to linked prims in a JSON-RPC message. */
     http_request(key request_id, string method, string body)
     {
-        json_link_message(LINK_THIS, "prim-dns:request", ["request-id", request_id, "method", method, "body", body]);
+        jsonrpc_link_notification(LINK_THIS, "prim-dns:request", JSON_OBJECT, ["request-id", request_id, "method", method, "body", body]);
     }
     
     /* Process JSON-RPC messages from linked prims. */
@@ -512,6 +529,12 @@ state main
     touch_start(integer detected)
     {
         key toucher = llDetectedKey(0);
+        
+        if (toucher != llGetOwner())
+        {
+            return;
+        }
+        
         llListenRemove(dialog_listener);
         dialog_listener = llListen(dialog_channel, "", toucher, "");
         llDialog(toucher, "What would you like to do?", ["reboot", "shutdown", "cancel"], dialog_channel);
@@ -528,7 +551,21 @@ state main
         }
         else if (message == "shutdown")
         {
-            state default;
+            state shutdown;
         }
+    }
+}
+
+state shutdown
+{
+    state_entry()
+    {
+        llSetText("Shutting down...", <1, 1, 1>, 1);
+        state default;
+    }
+
+    state_exit()
+    {
+        llSetText("", ZERO_VECTOR, 0);
     }
 }
