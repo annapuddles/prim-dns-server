@@ -560,7 +560,7 @@ state shutdown
     state_entry()
     {
         llSetText("Shutting down...", <1, 1, 1>, 1);
-        
+        llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:shutting-down", JSON_OBJECT, []), NULL_KEY);
         state default;
     }
 
