@@ -113,10 +113,10 @@ change_setting(string setting, string value)
     }
 }
 
-/* Send a JSON-RPC notification to other scripts. */
-jsonrpc_link_notification(integer link, string method, string params_type, list params)
+/* Create a JSON-RPC notification to send to other scripts. */
+string jsonrpc_notification(string method, string params_type, list params)
 {
-    llMessageLinked(link, 0, llList2Json(JSON_OBJECT, ["jsonrpc", "2.0", "method", method, "params", llList2Json(params_type, params)]), NULL_KEY);
+    return llList2Json(JSON_OBJECT, ["jsonrpc", "2.0", "method", method, "params", llList2Json(params_type, params)]);
 }
 
 default
@@ -207,7 +207,7 @@ state startup
     {
         llSetText("Waiting for startup...", <1, 1, 1>, 1);
         
-        jsonrpc_link_notification(LINK_THIS, "prim-dns:startup", JSON_OBJECT, []);
+        llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:startup", JSON_OBJECT, []), NULL_KEY);
         
         if (auto_start)
         {
@@ -291,8 +291,7 @@ state request_url
         {
             temporary_url = body;
             llOwnerSay("URL request granted: " + temporary_url);
-            
-            jsonrpc_link_notification(LINK_THIS, "prim-dns:url-request-granted", JSON_OBJECT, ["url", temporary_url]);
+            llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:url-request-granted", JSON_OBJECT, ["url", temporary_url]), NULL_KEY);
             
             /* Use the obtained temporary URL and auth string to update the permanent URL alias */
             
@@ -360,7 +359,7 @@ state request_url
                 llOwnerSay("****************************************\nCOPY THIS LINE INTO THE config NOTECARD:\n\nauth = " + llJsonGetValue(body, ["auth"]) + "\n\n****************************************");
             }
 
-            jsonrpc_link_notification(LINK_THIS, "prim-dns:alias-registered", JSON_OBJECT, ["alias", endpoint]);
+            llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:alias-registered", JSON_OBJECT, ["alias", endpoint]), NULL_KEY);
             
             state main;
         }
@@ -492,7 +491,7 @@ state main
     /* Pass the request data to linked prims in a JSON-RPC message. */
     http_request(key request_id, string method, string body)
     {
-        jsonrpc_link_notification(LINK_THIS, "prim-dns:request", JSON_OBJECT, ["request-id", request_id, "method", method, "body", body]);
+        llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:request", JSON_OBJECT, ["request-id", request_id, "method", method, "body", body]), NULL_KEY);
     }
     
     /* Process JSON-RPC messages from linked prims. */
@@ -561,6 +560,7 @@ state shutdown
     state_entry()
     {
         llSetText("Shutting down...", <1, 1, 1>, 1);
+        
         state default;
     }
 
