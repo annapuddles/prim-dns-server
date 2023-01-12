@@ -76,10 +76,8 @@ string time_to_string(float time)
     {
         parts += (string) minutes + " minutes";
     }
-    if (seconds > 0)
-    {
-        parts += (string) seconds + " seconds";
-    }
+    
+    parts += (string) seconds + " seconds";
     
     return llDumpList2String(parts, ", ");
 }
@@ -143,6 +141,7 @@ state read_configuration
     state_entry()
     {
         llSetText("Reading configuration...", <1, 1, 1>, 1);
+        llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:read-config-start", JSON_OBJECT, []), NULL_KEY);
         
         /* If the config notecard doesn't exist, abort. */
         if (llGetInventoryType("config") != INVENTORY_NOTECARD)
@@ -197,6 +196,7 @@ state read_configuration
     state_exit()
     {
         llSetText("", ZERO_VECTOR, 0);
+        llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:read-config-end", JSON_OBJECT, []), NULL_KEY);
     }
 }
 
@@ -422,6 +422,7 @@ state main
     {
         llResetTime();
         llSetText("Ready!", <1, 1, 1>, 1);
+        llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:startup-complete", JSON_OBJECT, []), NULL_KEY);
         if (status_update_interval > 0)
         {
             llSetTimerEvent(status_update_interval);
