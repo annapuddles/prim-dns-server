@@ -1,3 +1,6 @@
+/* The version of prim-dns. */
+string version = "1.0.0";
+
 /* The URL of the prim-dns webservice. */
 string prim_dns_api = "https://annapuddles.com/prim-dns/alias";
 
@@ -244,7 +247,7 @@ state off
         
         llListenRemove(dialog_listener);
         dialog_listener = llListen(dialog_channel, "", toucher, "");
-        llDialog(toucher, "What would you like to do?", ["power on", "cancel"], dialog_channel);
+        llDialog(toucher, "prim-dns v" + version, ["power on", "cancel"], dialog_channel);
     }
     
     listen(integer channel, string name, key id, string message)
@@ -368,7 +371,7 @@ state startup
         
         llListenRemove(dialog_listener);
         dialog_listener = llListen(dialog_channel, "", toucher, "");
-        llDialog(toucher, "What would you like to do?", ["reboot", "shutdown", "cancel"], dialog_channel);
+        llDialog(toucher, "prim-dns v" + version, ["reboot", "shutdown", "cancel"], dialog_channel);
     }
     
     /* Handle the response from the options menu. */
@@ -513,7 +516,7 @@ state request_url
         
         llListenRemove(dialog_listener);
         dialog_listener = llListen(dialog_channel, "", toucher, "");
-        llDialog(toucher, "What would you like to do?", ["reboot", "shutdown", "cancel"], dialog_channel);
+        llDialog(toucher, "prim-dns v" + version, ["reboot", "shutdown", "cancel"], dialog_channel);
     }
     
     /* Handle the response from the options menu. */
@@ -660,7 +663,7 @@ state main
         
         llListenRemove(dialog_listener);
         dialog_listener = llListen(dialog_channel, "", toucher, "");
-        llDialog(toucher, "What would you like to do?", ["reboot", "shutdown", "cancel"], dialog_channel);
+        llDialog(toucher, "prim-dns v" + version, ["reboot", "shutdown", "cancel"], dialog_channel);
     }
     
     /* Handle the response from the options menu. */
