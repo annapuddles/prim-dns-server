@@ -335,7 +335,7 @@ state startup
         }
         else if (message == "shutdown")
         {
-            state off;
+            state shutdown;
         }
     }
     
@@ -480,7 +480,7 @@ state request_url
         }
         else if (message == "shutdown")
         {
-            state off;
+            state shutdown;
         }
     }
     
@@ -597,7 +597,7 @@ state main
         }
         else if (method == "prim-dns:shutdown")
         {
-            state off;
+            state shutdown;
         }
     }
     
