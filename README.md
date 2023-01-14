@@ -1,3 +1,5 @@
+![prim-dns diagram](prim-dns diagram.png]
+
 # prim-dns:request (request-id, method, body)
 
 The prim-dns script received an HTTP request.
