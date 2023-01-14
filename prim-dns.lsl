@@ -29,7 +29,7 @@ key config_notecard_query_id;
 key prim_dns_request_id;
 
 /* Channel which dialogs will use. */
-integer dialog_channel = -872;
+integer dialog_channel;
 
 /* Listener for dialogs. */
 integer dialog_listener;
@@ -117,7 +117,69 @@ string jsonrpc_notification(string method, string params_type, list params)
     return llList2Json(JSON_OBJECT, ["jsonrpc", "2.0", "method", method, "params", llList2Json(params_type, params)]);
 }
 
+/* The names of all the possible headers in a request. */
+list HEADER_NAMES = [
+    "x-script-url",
+    "x-path-info",
+    "x-query-string",
+    "x-remote-ip",
+    "user-agent",
+    "connection",
+    "cache-control",
+    "x-forwarded-for",
+    "via",
+    "content-length",
+    "pragma",
+    "x-secondlife-shard",
+    "x-secondlife-region",
+    "x-secondlife-owner-name",
+    "x-secondlife-owner-key",
+    "x-secondlife-object-name",
+    "x-secondlife-object-key",
+    "x-secondlife-local-velocity",
+    "x-secondlife-local-rotation",
+    "x-secondlife-local-position",
+    "content-type",
+    "accept-charset",
+    "accept",
+    "accept-encoding",
+    "host"
+];
+
+/* Get the request headers as a JSON object. */
+string get_request_headers(key request_id)
+{
+    list headers;
+    integer length = llGetListLength(HEADER_NAMES);
+    integer i;
+    
+    for (i = 0; i < length; ++i)
+    {
+        string name = llList2String(HEADER_NAMES, i);
+        string value = llGetHTTPHeader(request_id, name);
+        
+        if (value != "")
+        {
+            headers += [name, value];
+        }
+    }
+    
+    return llList2Json(JSON_OBJECT, headers);
+}
+ 
 default
+{
+    state_entry()
+    {
+        /* Get a unique channel number based on the object's key. */
+        dialog_channel = 0x80000000 | (integer)("0x"+(string)llGetKey());
+        
+        state off;
+    }
+}
+
+/* In the off state, the server waits to be started by the owner. */
+state off
 {
     state_entry()
     {
@@ -126,12 +188,26 @@ default
     
     touch_end(integer detected)
     {
-        if (llDetectedKey(0) != llGetOwner())
+        key toucher = llDetectedKey(0);
+        
+        if (toucher != llGetOwner())
         {
             return;
         }
         
-        state read_configuration;
+        llListenRemove(dialog_listener);
+        dialog_listener = llListen(dialog_channel, "", toucher, "");
+        llDialog(toucher, "What would you like to do?", ["power on", "cancel"], dialog_channel);
+    }
+    
+    listen(integer channel, string name, key id, string message)
+    {
+        llListenRemove(dialog_listener);
+        
+        if (message == "power on")
+        {
+            state read_configuration;
+        }
     }
 }
 
@@ -259,7 +335,7 @@ state startup
         }
         else if (message == "shutdown")
         {
-            state default;
+            state off;
         }
     }
     
@@ -404,7 +480,7 @@ state request_url
         }
         else if (message == "shutdown")
         {
-            state default;
+            state off;
         }
     }
     
@@ -491,8 +567,8 @@ state main
 
     /* Pass the request data to linked prims in a JSON-RPC message. */
     http_request(key request_id, string method, string body)
-    {
-        llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:request", JSON_OBJECT, ["request-id", request_id, "method", method, "body", body]), NULL_KEY);
+    {        
+        llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:request", JSON_OBJECT, ["request-id", request_id, "method", method, "headers", get_request_headers(request_id), "body", body]), NULL_KEY);
     }
     
     /* Process JSON-RPC messages from linked prims. */
@@ -521,7 +597,7 @@ state main
         }
         else if (method == "prim-dns:shutdown")
         {
-            state default;
+            state off;
         }
     }
     
@@ -562,7 +638,7 @@ state shutdown
     {
         llSetText("Shutting down...", <1, 1, 1>, 1);
         llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:shutting-down", JSON_OBJECT, []), NULL_KEY);
-        state default;
+        state off;
     }
 
     state_exit()
