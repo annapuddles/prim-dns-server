@@ -14,8 +14,21 @@ The prim-dns script received an HTTP request.
 link_message(integer sender, integer num, string str, key id)
 {    
     if (llJsonGetValue(str, ["method"]) == "prim-dns:request")
-    {   
-        jsonrpc_link_notification(sender, "prim-dns:response", ["request-id", request_id, "status", 200, "body", "Hello, world!"]);
+    {
+        key request_id = (key) llJsonGetValue(str, ["params", "request-id"]);
+        
+        string params = llList2Json(JSON_OBJECT, [
+            "request-id", request_id,
+            "status", 200,
+            "body", "Hello, world!"
+        ]);
+        
+        string message = llList2Json(JSON_OBJECT, [
+            "method", "prim-dns:response",
+            "params", params
+        ]);
+        
+        llMessageLinked(sender, 0, message, NULL_KEY);
     }
 }
 ```
