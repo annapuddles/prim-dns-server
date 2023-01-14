@@ -16,6 +16,9 @@ integer use_secure_url = FALSE;
 /* Whether to automatically start the server, or wait for a signal from a script. */
 integer auto_start = TRUE;
 
+/* Whether any hover text will be shown or not. */
+integer text_enabled = TRUE;
+
 /* The colour of the hover text displayed over the prim. */
 vector text_color = <1, 1, 1>;
 
@@ -115,6 +118,20 @@ change_setting(string setting, string value)
     {
         auto_start = (integer) value;
     }
+    else if (setting == "text_enabled")
+    {
+        if (text_enabled != (integer) value)
+        {
+            clear_text();
+        }
+        
+        text_enabled = (integer) value;
+        
+        if (!text_enabled)
+        {
+            status_update_interval = 0;
+        }
+    }
     else if (setting == "text_color")
     {
         text_color = (vector) value;
@@ -183,12 +200,18 @@ string get_request_headers(key request_id)
 
 set_text(string text)
 {
-    llSetText(text, text_color, text_alpha);
+    if (text_enabled)
+    {
+        llSetText(text, text_color, text_alpha);
+    }
 }
 
 clear_text()
 {
-    llSetText("", ZERO_VECTOR, 0);
+    if (text_enabled)
+    {
+        llSetText("", ZERO_VECTOR, 0);
+    }
 }
  
 default
