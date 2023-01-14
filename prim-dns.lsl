@@ -16,6 +16,12 @@ integer use_secure_url = FALSE;
 /* Whether to automatically start the server, or wait for a signal from a script. */
 integer auto_start = TRUE;
 
+/* The colour of the hover text displayed over the prim. */
+vector text_color = <1, 1, 1>;
+
+/* The opacity of the hover text displayed over the prim. */
+float text_alpha = 1;
+
 /* The actual temporary prim URL assigned by llRequestURL */
 string temporary_url;
 
@@ -109,6 +115,14 @@ change_setting(string setting, string value)
     {
         auto_start = (integer) value;
     }
+    else if (setting == "text_color")
+    {
+        text_color = (vector) value;
+    }
+    else if (setting == "text_alpha")
+    {
+        text_alpha = (float) value;
+    }
 }
 
 /* Create a JSON-RPC notification to send to other scripts. */
@@ -166,6 +180,16 @@ string get_request_headers(key request_id)
     
     return llList2Json(JSON_OBJECT, headers);
 }
+
+set_text(string text)
+{
+    llSetText(text, text_color, text_alpha);
+}
+
+clear_text()
+{
+    llSetText("", ZERO_VECTOR, 0);
+}
  
 default
 {
@@ -183,7 +207,7 @@ state off
 {
     state_entry()
     {
-        llSetText("Touch to start", <1, 1, 1>, 1);
+        set_text("Touch to start");
     }
     
     touch_end(integer detected)
@@ -216,7 +240,7 @@ state read_configuration
 {
     state_entry()
     {
-        llSetText("Reading configuration...", <1, 1, 1>, 1);
+        set_text("Reading configuration...");
         llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:read-config-start", JSON_OBJECT, []), NULL_KEY);
         
         /* If the config notecard doesn't exist, abort. */
@@ -271,7 +295,7 @@ state read_configuration
     
     state_exit()
     {
-        llSetText("", ZERO_VECTOR, 0);
+        clear_text();
         llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:read-config-end", JSON_OBJECT, []), NULL_KEY);
     }
 }
@@ -281,7 +305,7 @@ state startup
 {
     state_entry()
     {
-        llSetText("Waiting for startup...", <1, 1, 1>, 1);
+        set_text("Waiting for startup...");
         
         llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:startup", JSON_OBJECT, []), NULL_KEY);
         
@@ -341,7 +365,7 @@ state startup
     
     state_exit()
     {
-        llSetText("", ZERO_VECTOR, 0);
+        clear_text();
     }
 }
 
@@ -350,7 +374,7 @@ state request_url
 {
     state_entry()
     {
-        llSetText("Requesting URL...", <1, 1, 1>, 1);
+        set_text("Requesting URL...");
         
         /* Release any current temporary URL in use. */
         llReleaseURL(temporary_url);
@@ -487,7 +511,7 @@ state request_url
     state_exit()
     {
         llSetTimerEvent(0);
-        llSetText("", ZERO_VECTOR, 0);
+        clear_text();
     }
 }
 
@@ -497,7 +521,7 @@ state main
     state_entry()
     {
         llResetTime();
-        llSetText("Ready!", <1, 1, 1>, 1);
+        set_text("Ready!");
         llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:startup-complete", JSON_OBJECT, []), NULL_KEY);
         if (status_update_interval > 0)
         {
@@ -514,7 +538,7 @@ state main
     {
         if (status_update_interval == 0)
         {
-            llSetText("", ZERO_VECTOR, 0);
+            clear_text();
             return;
         }
         
@@ -529,12 +553,12 @@ state main
         
         stats += "Memory Used: " + (string) percent_mem + "% (" + (string) (used_mem / 1024) + " KiB / " + (string) (mem_limit / 1024) + " KiB)";
         
-        llSetText(stats, <1, 1, 1>, 1);
+        set_text(stats);
     }
     
     state_exit()
     {
-        llSetText("", ZERO_VECTOR, 0);
+        clear_text();
         llSetTimerEvent(0);
     }
     
@@ -636,13 +660,13 @@ state shutdown
 {
     state_entry()
     {
-        llSetText("Shutting down...", <1, 1, 1>, 1);
+        set_text("Shutting down...");
         llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:shutting-down", JSON_OBJECT, []), NULL_KEY);
         state off;
     }
 
     state_exit()
     {
-        llSetText("", ZERO_VECTOR, 0);
+        clear_text();
     }
 }
