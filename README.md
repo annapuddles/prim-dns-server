@@ -1,4 +1,4 @@
-![prim-dns diagram](prim-dns diagram.png)
+![prim-dns diagram](prim-dns%20diagram.png)
 
 # prim-dns:request (request-id, method, body)
 
