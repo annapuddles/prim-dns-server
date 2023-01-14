@@ -16,8 +16,8 @@ default
             string headers = llJsonGetValue(str, ["params", "headers"]);
             string body = llJsonGetValue(str, ["params", "body"]);
             
-            llMessageLinked(sender, 0, jsonrpc_notification("prim-dns:set-content-type", JSON_OBJECT, ["request-id", request_id, "content-type", CONTENT_TYPE_HTML]), NULL_KEY);
-            llMessageLinked(sender, 0, jsonrpc_notification("prim-dns:response", JSON_OBJECT, ["request-id", request_id, "status", 200, "body", "<b>Hello, world!</b>"]), NULL_KEY);
+            llMessageLinked(sender, 0, jsonrpc_notification("prim-dns:set-content-type", JSON_OBJECT, ["request-id", request_id, "content-type", CONTENT_TYPE_XHTML]), NULL_KEY);
+            llMessageLinked(sender, 0, jsonrpc_notification("prim-dns:response", JSON_OBJECT, ["request-id", request_id, "status", 200, "body", "<html xmlns=\"http://www.w3.org/1999/xhtml\"><body style=\"background-color: black; color: green; font-family: monospace;\"><b>Hello, world!</b></body></html>"]), NULL_KEY);
         }
     }
 }
