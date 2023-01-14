@@ -1,16 +1,28 @@
+# prim-dns server script
+
+The prim-dns server script is a modular SecondLife script that will request a temporary URL and register that URL with a [prim-dns web service](https://github.com/annapuddles/prim-dns) instance to automatically create a permanent alias, which client scripts can use to find the current temporary URL of the server at any given time. This allows you to quickly add robust HTTP server functionality to any prim, and the modular design means the core script can be updated without needing to edit your own code, and different functions of a server can be split across multiple scripts for easier management.
+
+# prim-dns server diagram
+
+The diagram below illustrates the communication between the prim-dns server script, the request handler scripts, the prim-dns web service, and a client.
+
 ![prim-dns diagram](prim-dns%20diagram.png)
 
-# prim-dns:request (request-id, method, body)
+# Link messages API
+
+Communication between the prim-dns script and the request handler scripts is accomplished via link messages, where the string portion of the message is a JSON-RPC object.
+
+## prim-dns:request (request-id, method, body)
 
 The prim-dns script received an HTTP request.
 
-## Parameters
+### Parameters
 
 - `request-id` The key of the request.
 - `method` The HTTP method of the request.
 - `body` The body of the request.
 
-## Example
+### Example
 
 ```lsl
 link_message(integer sender, integer num, string str, key id)
@@ -35,16 +47,16 @@ link_message(integer sender, integer num, string str, key id)
 }
 ```
 
-# prim-dns:set-content-type (request-id, content-type)
+## prim-dns:set-content-type (request-id, content-type)
 
 Set the content type of the response.
 
-## Parameters
+### Parameters
 
 - `request-id` The key of the request to set the response content type for.
 - `content-type` One of the supported content type constants.
 
-## Example
+### Example
 
 ```lsl
 string params = llList2Json(JSON_OBJECT, [
@@ -60,17 +72,17 @@ string message = llList2Json(JSON_OBJECT, [
 llMessageLinked(LINK_THIS, 0, message, NULL_KEY);
 ```
 
-# prim-dns:response (request-id, status, body)
+## prim-dns:response (request-id, status, body)
 
 Send the response.
 
-## Parameters
+### Parameters
 
 - `request-id` The key of the request to respond to.
 - `status` The HTTP status code of the response.
 - `body` The body of the response.
 
-## Example
+### Example
 
 ```lsl
 string params = llList2Json(JSON_OBJECT, [
@@ -87,11 +99,11 @@ string message = llList2son(JSON_OBJECT, [
 llMessageLinked(LINK_THIS, 0, message, NULL_KEY);
 ```
 
-# prim-dns:reboot ()
+## prim-dns:reboot ()
 
 Reboot the prim-dns server.
 
-## Example
+### Example
 
 ```lsl
 string message = llList2Json(JSON_OBJECT, [
@@ -101,11 +113,11 @@ string message = llList2Json(JSON_OBJECT, [
 llMessageLinked(LINK_THIS, 0, message, NULL_KEY);
 ```
 
-# prim-dns:shutdown ()
+## prim-dns:shutdown ()
 
 Shut down the prim-dns server.
 
-## Example
+### Example
 
 ```lsl
 string message = llList2Json(JSON_OBJECT, [
@@ -115,11 +127,11 @@ string message = llList2Json(JSON_OBJECT, [
 llMessageLinked(LINK_THIS, 0, message, NULL_KEY);
 ```
 
-# prim-dns:startup ()
+## prim-dns:startup ()
 
 Sent when the prim-dns server finishes reading the configuration and is waiting to continue starting up. If auto_start = 1, then the server will immediately continue, otherwise it will wait for the prim-dns:start messsage.
 
-## Example
+### Example
 
 ```lsl
 link_message(integer sender, integer num, string str, key id)
@@ -131,11 +143,11 @@ link_message(integer sender, integer num, string str, key id)
 }
 ```
 
-# prim-dns:start ()
+## prim-dns:start ()
 
 Tell the prim-dns server to complete its startup.
 
-## Example 
+### Example 
 
 ```lsl
 string message = llList2Json(JSON_OBJECT, [
@@ -145,15 +157,15 @@ string message = llList2Json(JSON_OBJECT, [
 llMessageLinked(LINK_THIS, 0, message, NULL_KEY);
 ```
 
-# prim-dns:url-request-granted (url)
+## prim-dns:url-request-granted (url)
 
 Sent when the prim-dns server is granted a temporary URL by the region.
 
-## Parameters
+### Parameters
 
 - `url` The temporary URL assigned to the script.
 
-## Example
+### Example
 
 ```lsl
 link_message(integer sender, integer num, string str, key id)
@@ -165,15 +177,15 @@ link_message(integer sender, integer num, string str, key id)
 }
 ```
 
-# prim-dns:alias-registered (alias)
+## prim-dns:alias-registered (alias)
 
 Sent when the prim-dns server successfully registers or updates its alias.
 
-## Parameters
+### Parameters
 
 - `alias` The endpoint URL of the registered alias.
 
-## Example
+### Example
 
 ```lsl
 link_message(integer sender, integer num, string str, key id)
