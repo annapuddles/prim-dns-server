@@ -1,5 +1,5 @@
 /* The version of prim-dns. */
-string version = "1.0.0";
+string version = "1.1.0";
 
 /* The URL of the prim-dns webservice. */
 string prim_dns_api = "https://annapuddles.com/prim-dns/alias";
@@ -570,15 +570,12 @@ state main
         
         string stats;
         
-        integer used_mem = llGetUsedMemory();
-        integer mem_limit = llGetMemoryLimit();
-        float mem_ratio = (float) used_mem / (float) mem_limit;
-        integer percent_mem = (integer) (mem_ratio * 100);
-        
         stats += "Uptime: " + time_to_string(llGetTime()) + "\n";
         
-        stats += "Memory Used: " + (string) percent_mem + "% (" + (string) (used_mem / 1024) + " KiB / " + (string) (mem_limit / 1024) + " KiB)";
-        
+        integer data_avail = llLinksetDataAvailable();
+        integer data_percent = (integer) (data_avail / 65536 * 100);
+        stats += "Storage: " + (string) data_percent + "% (" + (string) ((integer) (data_avail / 1024)) + " KiB / 64 KiB)";
+                
         set_text(stats);
     }
     
