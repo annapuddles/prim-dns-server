@@ -1,5 +1,5 @@
 /* The version of prim-dns. */
-string version = "1.1.0";
+string version = "1.1.1";
 
 /* The URL of the prim-dns webservice. */
 string prim_dns_api = "https://annapuddles.com/prim-dns/alias";
@@ -574,7 +574,7 @@ state main
         
         integer data_avail = llLinksetDataAvailable();
         integer data_percent = (integer) (data_avail / 65536 * 100);
-        stats += "Storage: " + (string) data_percent + "% (" + (string) ((integer) (data_avail / 1024)) + " KiB / 64 KiB)";
+        stats += "Storage Remaining: " + (string) data_percent + "% (" + (string) ((integer) (data_avail / 1024)) + " KiB / 64 KiB)";
                 
         set_text(stats);
     }
