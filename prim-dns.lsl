@@ -1,5 +1,5 @@
 /* The version of prim-dns. */
-string version = "1.1.1";
+string version = "1.2.0";
 
 /* The URL of the prim-dns webservice. */
 string prim_dns_api = "https://annapuddles.com/prim-dns/alias";
@@ -215,6 +215,19 @@ clear_text()
     {
         llSetText("", ZERO_VECTOR, 0);
     }
+}
+
+string get_stats()
+{
+    string stats;
+    
+    stats += "Uptime: " + time_to_string(llGetTime()) + "\n";
+    
+    integer data_avail = llLinksetDataAvailable();
+    integer data_percent = (integer) (data_avail / 65536 * 100);
+    stats += "Storage Remaining: " + (string) data_percent + "% (" + (string) ((integer) (data_avail / 1024)) + " KiB / 64 KiB)";
+    
+    return stats;
 }
  
 default
@@ -567,16 +580,8 @@ state main
             clear_text();
             return;
         }
-        
-        string stats;
-        
-        stats += "Uptime: " + time_to_string(llGetTime()) + "\n";
-        
-        integer data_avail = llLinksetDataAvailable();
-        integer data_percent = (integer) (data_avail / 65536 * 100);
-        stats += "Storage Remaining: " + (string) data_percent + "% (" + (string) ((integer) (data_avail / 1024)) + " KiB / 64 KiB)";
                 
-        set_text(stats);
+        set_text(get_stats());
     }
     
     state_exit()
@@ -660,7 +665,7 @@ state main
         
         llListenRemove(dialog_listener);
         dialog_listener = llListen(dialog_channel, "", toucher, "");
-        llDialog(toucher, "prim-dns v" + version, ["reboot", "shutdown", "cancel"], dialog_channel);
+        llDialog(toucher, "prim-dns v" + version, ["cancel", " ", " ", "info", "reboot", "shutdown"], dialog_channel);
     }
     
     /* Handle the response from the options menu. */
@@ -675,6 +680,25 @@ state main
         else if (message == "shutdown")
         {
             state shutdown;
+        }
+        else if (message == "info")
+        {
+            string text = "prim-dns v" + version;
+            text += "\n" + get_stats();
+            text += "\nURL: " + temporary_url;
+            
+            string alias;
+            if (prim_dns_alias == "")
+            {
+                alias = llGetKey();
+            }
+            else
+            {
+                alias = prim_dns_alias;
+            }
+            text += "\nAlias: " + prim_dns_api + "/" + alias;
+            
+            llDialog(id, text, ["OK"], dialog_channel);
         }
     }
 }
