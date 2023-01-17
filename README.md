@@ -196,3 +196,19 @@ link_message(integer sender, integer num, string str, key id)
     }
 }
 ```
+
+## prim-dns:shutting-down ()
+
+Sent when the prim-dns server is shutting down.
+
+### Example
+
+```lsl
+link_message(integer sender, integer num, string str, key id)
+{
+    if (llJsonGetValue(str, ["method"]) == "prim-dns:shutting-down")
+    {
+        llOwnerSay("The prim-dns server is shutting down.");
+    }
+}
+```
