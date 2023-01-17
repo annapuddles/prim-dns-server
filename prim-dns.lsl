@@ -1,5 +1,8 @@
 /* The version of prim-dns. */
-string version = "1.2.0";
+string version = "2.0.0";
+
+/* The name of the configuration notecard. */
+string config_notecard = "prim-dns config";
 
 /* The URL of the prim-dns webservice. */
 string prim_dns_api = "https://annapuddles.com/prim-dns/alias";
@@ -283,7 +286,7 @@ state read_configuration
         llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:read-config-start", JSON_OBJECT, []), NULL_KEY);
         
         /* If the config notecard doesn't exist, abort. */
-        if (llGetInventoryType("config") != INVENTORY_NOTECARD)
+        if (llGetInventoryType(config_notecard) != INVENTORY_NOTECARD)
         {
             state startup;
         }
@@ -296,7 +299,7 @@ state read_configuration
         config_notecard_line = 0;
         
         /* Read the first line of the notecard. */
-        config_notecard_query_id = llGetNotecardLine("config", config_notecard_line++);
+        config_notecard_query_id = llGetNotecardLine(config_notecard, config_notecard_line++);
     }
     
     /* Read each line of the config notecard. */
@@ -329,7 +332,7 @@ state read_configuration
         }
         
         /* Read the next line */
-        config_notecard_query_id = llGetNotecardLine("config", config_notecard_line++);
+        config_notecard_query_id = llGetNotecardLine(config_notecard, config_notecard_line++);
     }
     
     state_exit()
