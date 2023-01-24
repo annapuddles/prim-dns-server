@@ -12,3 +12,10 @@ When using the file server, all paths that do not match a notecard will return a
 ```lsl
 jsonrpc_link_notification(LINK_SET, "prim-dns:file-server:register-path", JSON_OBJECT, ["path", "/data.json"]);
 ```
+
+## Known issues
+
+- The MIME types you can use are limited to those listed here: https://wiki.secondlife.com/wiki/LlSetContentType
+  - CSS notecards can't be used because browsers will reject loading CSS that does not have the MIME type `text/css`.
+    - You can embed CSS directly in XHTML pages instead.
+    - Browsers seem to accept Javascript without `text/javascript`.
