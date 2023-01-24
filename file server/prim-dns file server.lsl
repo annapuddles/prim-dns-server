@@ -1,3 +1,5 @@
+/* prim-dns file server, version 1.0.0 */
+
 /* The prefix for scripts which will act as caches for the file server. */
 string cache_prefix = "prim-dns file server cache";
 
