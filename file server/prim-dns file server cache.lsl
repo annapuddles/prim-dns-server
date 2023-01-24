@@ -1,3 +1,5 @@
+/* prim-dns file server cache script, version 1.0.0 */
+
 /* The content of the current notecard being read. */
 string notecard_content;
 
