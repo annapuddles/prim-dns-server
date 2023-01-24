@@ -199,7 +199,8 @@ default
             {
                 if (llListFindList(cached_notecards, [name]) == -1)
                 {
-                    name += "/" + index_notecard;
+                    redirect(sender, request_id, llJsonGetValue(headers, ["x-script-url"]) + name + "/");
+                    return;
                 }
             }
             
