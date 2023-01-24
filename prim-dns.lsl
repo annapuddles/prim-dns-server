@@ -148,10 +148,15 @@ change_setting(string setting, string value)
     }
 }
 
-/* Create a JSON-RPC notification to send to other scripts. */
+/* JSON-RPC functions */
 string jsonrpc_notification(string method, string params_type, list params)
 {
     return llList2Json(JSON_OBJECT, ["jsonrpc", "2.0", "method", method, "params", llList2Json(params_type, params)]);
+}
+
+jsonrpc_link_notification(integer link, string method, string params_type, list params)
+{
+    llMessageLinked(link, 0, jsonrpc_notification(method, params_type, params), NULL_KEY);
 }
 
 /* The names of all the possible headers in a request. */
@@ -283,7 +288,7 @@ state read_configuration
     state_entry()
     {
         set_text("Reading configuration...");
-        llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:read-config-start", JSON_OBJECT, []), NULL_KEY);
+        jsonrpc_link_notification(LINK_SET, "prim-dns:read-config-start", JSON_OBJECT, []);
         
         /* If the config notecard doesn't exist, abort. */
         if (llGetInventoryType(config_notecard) != INVENTORY_NOTECARD)
@@ -338,7 +343,7 @@ state read_configuration
     state_exit()
     {
         clear_text();
-        llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:read-config-end", JSON_OBJECT, []), NULL_KEY);
+        jsonrpc_link_notification(LINK_SET, "prim-dns:read-config-end", JSON_OBJECT, []);
     }
 }
 
@@ -349,7 +354,7 @@ state startup
     {
         set_text("Waiting for startup...");
         
-        llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:startup", JSON_OBJECT, []), NULL_KEY);
+        jsonrpc_link_notification(LINK_SET, "prim-dns:startup", JSON_OBJECT, []);
         
         if (auto_start)
         {
@@ -433,7 +438,7 @@ state request_url
         {
             temporary_url = body;
             llOwnerSay("URL request granted: " + temporary_url);
-            llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:url-request-granted", JSON_OBJECT, ["url", temporary_url]), NULL_KEY);
+            jsonrpc_link_notification(LINK_SET, "prim-dns:url-request-granted", JSON_OBJECT, ["url", temporary_url]);
             
             /* Use the obtained temporary URL and auth string to update the permanent URL alias */
             
@@ -501,7 +506,7 @@ state request_url
                 llOwnerSay("****************************************\nCOPY THIS LINE INTO THE config NOTECARD:\n\nauth = " + llJsonGetValue(body, ["auth"]) + "\n\n****************************************");
             }
 
-            llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:alias-registered", JSON_OBJECT, ["alias", endpoint]), NULL_KEY);
+            jsonrpc_link_notification(LINK_SET, "prim-dns:alias-registered", JSON_OBJECT, ["alias", endpoint]);
             
             state main;
         }
@@ -564,7 +569,7 @@ state main
     {
         llResetTime();
         set_text("Ready!");
-        llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:startup-complete", JSON_OBJECT, []), NULL_KEY);
+        jsonrpc_link_notification(LINK_SET, "prim-dns:startup-complete", JSON_OBJECT, []);
         if (status_update_interval > 0)
         {
             llSetTimerEvent(status_update_interval);
@@ -623,7 +628,7 @@ state main
     /* Pass the request data to linked prims in a JSON-RPC message. */
     http_request(key request_id, string method, string body)
     {        
-        llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:request", JSON_OBJECT, ["request-id", request_id, "method", method, "headers", get_request_headers(request_id), "body", body]), NULL_KEY);
+        jsonrpc_link_notification(LINK_SET, "prim-dns:request", JSON_OBJECT, ["request-id", request_id, "method", method, "headers", get_request_headers(request_id), "body", body]);
     }
     
     /* Process JSON-RPC messages from linked prims. */
@@ -711,7 +716,7 @@ state shutdown
     state_entry()
     {
         set_text("Shutting down...");
-        llMessageLinked(LINK_SET, 0, jsonrpc_notification("prim-dns:shutting-down", JSON_OBJECT, []), NULL_KEY);
+        jsonrpc_link_notification(LINK_SET, "prim-dns:shutting-down", JSON_OBJECT, []);
         state off;
     }
 
