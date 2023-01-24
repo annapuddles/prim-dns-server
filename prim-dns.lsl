@@ -1,5 +1,5 @@
 /* The version of prim-dns. */
-string version = "2.0.0";
+string version = "2.1.0";
 
 /* The name of the configuration notecard. */
 string config_notecard = "prim-dns config";
