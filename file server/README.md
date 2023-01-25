@@ -15,7 +15,9 @@ jsonrpc_link_notification(LINK_SET, "prim-dns:file-server:register-path", JSON_O
 
 ## Known issues
 
-- The MIME types you can use are limited to those listed here: https://wiki.secondlife.com/wiki/LlSetContentType
+- Use of HTML files is very limited as described [here](https://wiki.secondlife.com/wiki/LlSetContentType#Caveats).
+  - You can use XHTML instead for the same thing with none of those limitations.
+- The MIME types you can use are limited to those listed [here](https://wiki.secondlife.com/wiki/LlSetContentType).
   - CSS notecards can't be used because browsers will reject loading CSS that does not have the MIME type `text/css`.
     - You can embed CSS directly in XHTML pages instead.
     - Browsers seem to accept Javascript without `text/javascript`.
