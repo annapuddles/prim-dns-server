@@ -1,5 +1,5 @@
 /* The version of prim-dns. */
-string version = "2.1.0";
+string version = "2.2.0";
 
 /* The name of the configuration notecard. */
 string config_notecard = "prim-dns config";
@@ -402,7 +402,7 @@ state startup
         
         if (message == "reboot")
         {
-            state read_configuration;
+            state reboot;
         }
         else if (message == "shutdown")
         {
@@ -547,7 +547,7 @@ state request_url
         
         if (message == "reboot")
         {
-            state read_configuration;
+            state reboot;
         }
         else if (message == "shutdown")
         {
@@ -653,7 +653,7 @@ state main
         }
         else if (method == "prim-dns:reboot")
         {
-            state read_configuration;
+            state reboot;
         }
         else if (method == "prim-dns:shutdown")
         {
@@ -673,7 +673,7 @@ state main
         
         llListenRemove(dialog_listener);
         dialog_listener = llListen(dialog_channel, "", toucher, "");
-        llDialog(toucher, "prim-dns v" + version, ["cancel", " ", " ", "info", "reboot", "shutdown"], dialog_channel);
+        llDialog(toucher, "prim-dns v" + version, [" ", "cancel", " ", "info", "reboot", "shutdown"], dialog_channel);
     }
     
     /* Handle the response from the options menu. */
@@ -683,7 +683,7 @@ state main
         
         if (message == "reboot")
         {
-            state read_configuration;
+            state reboot;
         }
         else if (message == "shutdown")
         {
@@ -708,6 +708,21 @@ state main
             
             llDialog(id, text, ["OK"], dialog_channel);
         }
+    }
+}
+ 
+state reboot
+{
+    state_entry()
+    {
+        set_text("Rebooting...");
+        jsonrpc_link_notification(LINK_SET, "prim-dns:shutting-down", JSON_OBJECT, []);
+        state read_configuration;
+    }
+     
+    state_exit()
+    {
+        clear_text();
     }
 }
 
