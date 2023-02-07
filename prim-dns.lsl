@@ -1,5 +1,5 @@
 /* The version of prim-dns. */
-string version = "2.2.0";
+string version = "2.2.1";
 
 /* The name of the configuration notecard. */
 string config_notecard = "prim-dns config";
@@ -503,7 +503,7 @@ state request_url
             else
             {
                 llOwnerSay("Server URL registered successfully at " + endpoint);
-                llOwnerSay("****************************************\nCOPY THIS LINE INTO THE config NOTECARD:\n\nauth = " + llJsonGetValue(body, ["auth"]) + "\n\n****************************************");
+                llOwnerSay("****************************************\nCOPY THIS LINE INTO THE " + config_notecard + " NOTECARD:\n\nauth = " + llJsonGetValue(body, ["auth"]) + "\n\n****************************************");
             }
 
             jsonrpc_link_notification(LINK_SET, "prim-dns:alias-registered", JSON_OBJECT, ["alias", endpoint]);
