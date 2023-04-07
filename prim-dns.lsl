@@ -1,5 +1,5 @@
 /* The version of prim-dns. */
-string version = "2.2.1";
+string version = "2.3.0";
 
 /* The name of the configuration notecard. */
 string config_notecard = "prim-dns config";
@@ -31,6 +31,12 @@ vector text_color = <1, 1, 1>;
 /* The opacity of the hover text displayed over the prim. */
 float text_alpha = 1;
 
+/* Whether the menu system is enabled or not. */
+integer enable_menus = TRUE;
+
+/* Whether messages will be shown in chat. */
+integer enable_chat_output = TRUE;
+
 /* The actual temporary prim URL assigned by llRequestURL */
 string temporary_url;
 
@@ -59,6 +65,15 @@ start_url_request()
     else
     {
         llRequestURL();
+    }
+}
+
+/* Log messages to chat if enabled. */
+log(string text)
+{
+    if (enable_chat_output)
+    {
+        llOwnerSay(text);
     }
 }
 
@@ -145,6 +160,14 @@ change_setting(string setting, string value)
     else if (setting == "text_alpha")
     {
         text_alpha = (float) value;
+    }
+    else if (setting == "enable_menus")
+    {
+        enable_menus = (integer) value;
+    }
+    else if (setting == "enable_chat_output")
+    {
+        enable_chat_output = (integer) value;
     }
 }
 
@@ -383,6 +406,11 @@ state startup
     /* Present an options menu on touch. */
     touch_start(integer detected)
     {
+        if (!enable_menus)
+        {
+            return;
+        }
+        
         key toucher = llDetectedKey(0);
     
         if (toucher != llGetOwner())
@@ -437,7 +465,7 @@ state request_url
         if (method == URL_REQUEST_GRANTED)
         {
             temporary_url = body;
-            llOwnerSay("URL request granted: " + temporary_url);
+            log("URL request granted: " + temporary_url);
             jsonrpc_link_notification(LINK_SET, "prim-dns:url-request-granted", JSON_OBJECT, ["url", temporary_url]);
             
             /* Use the obtained temporary URL and auth string to update the permanent URL alias */
@@ -473,7 +501,7 @@ state request_url
         /* If for some reason the SecondLife server denied the request, display the reason */
         else if (method == URL_REQUEST_DENIED)
         {
-            llOwnerSay("URL request denied: " + body);
+            log("URL request denied: " + body);
             
             llSetTimerEvent(10);
         }
@@ -497,13 +525,13 @@ state request_url
             /* If not auth string is returned in the response, then we must be updating an existing alias. */
             if (auth == JSON_INVALID)
             {
-                llOwnerSay("Server URL updated successfully for " + endpoint);
+                log("Server URL updated successfully for " + endpoint);
             }
             /* If an auth string is returned, this must be a new alias. */
             else
             {
-                llOwnerSay("Server URL registered successfully at " + endpoint);
-                llOwnerSay("****************************************\nCOPY THIS LINE INTO THE " + config_notecard + " NOTECARD:\n\nauth = " + llJsonGetValue(body, ["auth"]) + "\n\n****************************************");
+                log("Server URL registered successfully at " + endpoint);
+                log("****************************************\nCOPY THIS LINE INTO THE " + config_notecard + " NOTECARD:\n\nauth = " + llJsonGetValue(body, ["auth"]) + "\n\n****************************************");
             }
 
             jsonrpc_link_notification(LINK_SET, "prim-dns:alias-registered", JSON_OBJECT, ["alias", endpoint]);
@@ -528,6 +556,11 @@ state request_url
     /* Present an options menu on touch. */
     touch_start(integer detected)
     {
+        if (!enable_menus)
+        {
+            return;
+        }
+        
         key toucher = llDetectedKey(0);
         
         if (toucher != llGetOwner())
@@ -664,6 +697,11 @@ state main
     /* Present an options menu on touch. */
     touch_start(integer detected)
     {
+        if (!enable_menus)
+        {
+            return;
+        }
+        
         key toucher = llDetectedKey(0);
         
         if (toucher != llGetOwner())

@@ -24,3 +24,9 @@ text_color = <1, 1, 1>
 
 # The opacity of any hover text
 text_alpha = 1
+
+# Whether the menu system should be enabled
+enable_menus = 1
+
+# Whether status updates should be shown in chat
+enable_chat_output = 1
