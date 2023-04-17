@@ -1,5 +1,5 @@
 /* The version of prim-dns. */
-string version = "2.3.0";
+string version = "2.3.1";
 
 /* The name of the configuration notecard. */
 string config_notecard = "prim-dns config";
@@ -503,7 +503,7 @@ state request_url
         {
             log("URL request denied: " + body);
             
-            llSetTimerEvent(10);
+            llSetTimerEvent(30);
         }
     }
     
@@ -543,7 +543,7 @@ state request_url
         {
             llOwnerSay("Registration failed: [" + (string) status + "] " + llJsonGetValue(body, ["error"]));
             
-            llSetTimerEvent(10);
+            llSetTimerEvent(30);
         }
     }
     
@@ -585,6 +585,14 @@ state request_url
         else if (message == "shutdown")
         {
             state shutdown;
+        }
+    }
+    
+    changed(integer change)
+    {
+        if (change & CHANGED_INVENTORY)
+        {
+            state read_configuration;
         }
     }
     
