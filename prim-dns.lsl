@@ -1,5 +1,5 @@
 /* The version of prim-dns. */
-string version = "2.3.2";
+string version = "2.4.0";
 
 /* The name of the configuration notecard. */
 string config_notecard = "prim-dns config";
@@ -36,6 +36,9 @@ integer enable_menus = TRUE;
 
 /* Whether messages will be shown in chat. */
 integer enable_chat_output = TRUE;
+
+/* Whether to automatically reboot on inventory change. */
+integer auto_reboot = FALSE;
 
 /* The actual temporary prim URL assigned by llRequestURL */
 string temporary_url;
@@ -387,7 +390,7 @@ state startup
     
     changed(integer change)
     {
-        if (change & CHANGED_INVENTORY)
+        if (auto_reboot && (change & CHANGED_INVENTORY))
         {
             state read_configuration;
         }
@@ -590,7 +593,7 @@ state request_url
     
     changed(integer change)
     {
-        if (change & CHANGED_INVENTORY)
+        if (auto_reboot && (change & CHANGED_INVENTORY))
         {
             state read_configuration;
         }
@@ -654,7 +657,7 @@ state main
     changed(integer change)
     {
         /* If the inventory changes (for example, after updating the config notecard), re-initialize. */
-        if (change & CHANGED_INVENTORY)
+        if (auto_reboot && (change & CHANGED_INVENTORY))
         {
             state read_configuration;
         }

@@ -16,6 +16,9 @@ status_update_interval = 1
 # Whether to automatically start the server, or wait for another script to start it.
 auto_start = 1
 
+# Whether to automatically reboot the server when the inventory changes.
+auto_reboot = 0
+
 # Whether any hover text will be displayed
 text_enabled = 1
 
