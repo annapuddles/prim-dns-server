@@ -1,5 +1,5 @@
 /* The version of prim-dns. */
-string version = "2.3.1";
+string version = "2.3.2";
 
 /* The name of the configuration notecard. */
 string config_notecard = "prim-dns config";
@@ -255,8 +255,8 @@ string get_stats()
     stats += "Uptime: " + time_to_string(llGetTime()) + "\n";
     
     integer data_avail = llLinksetDataAvailable();
-    integer data_percent = (integer) (data_avail / 65536 * 100);
-    stats += "Storage Remaining: " + (string) data_percent + "% (" + (string) ((integer) (data_avail / 1024)) + " KiB / 64 KiB)";
+    integer data_percent = (integer) (data_avail / 131072 * 100);
+    stats += "Storage Remaining: " + (string) data_percent + "% (" + (string) ((integer) (data_avail / 1024)) + " KiB / 128 KiB)";
     
     return stats;
 }
