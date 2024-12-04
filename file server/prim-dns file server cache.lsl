@@ -1,4 +1,4 @@
-/* prim-dns file server cache script, version 1.0.0 */
+/* prim-dns file server cache script, version 1.1.0 */
 
 /* The content of the current notecard being read. */
 string notecard_content;
@@ -38,8 +38,7 @@ read_next_notecard()
     if (notecard_index <= max_notecard_index)
     {
         notecard_name = llGetInventoryName(INVENTORY_NOTECARD, notecard_index++);
-        notecard_line = 0;
-        notecard_query = llGetNotecardLine(notecard_name, notecard_line++);
+        notecard_query = llGetNotecardLine(notecard_name, notecard_line = 0);
     }
     else
     {
@@ -99,15 +98,21 @@ default
             return;
         }
         
+        while (data != EOF && data != NAK)
+        {
+            notecard_content += data + "\n";
+            data = llGetNotecardLineSync(notecard_name, ++notecard_line);
+        }
+        
         if (data == EOF)
         {
             cache += [notecard_name, notecard_content];
             read_next_notecard();
         }
-        else
+        
+        if (data == NAK)
         {
-            notecard_content += data + "\n";
-            notecard_query = llGetNotecardLine(notecard_name, notecard_line++);
+            notecard_query = llGetNotecardLine(notecard_name, ++notecard_line);
         }
     }
 }
