@@ -8,3 +8,5 @@ The directory structure seen here would actually be simulated by naming the note
 - `/index.xhtml`
 - `/javascript/index.js`
 - `/javascript/index.xhtml`
+
+![Example inventory contents](example%20inventory%20contents.png)
