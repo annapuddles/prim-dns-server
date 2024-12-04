@@ -1,4 +1,4 @@
-/* prim-dns v2.5.0
+/* prim-dns v2.6.0
  *
  * The prim-dns server script is a modular SecondLife script that will request
  * a temporary URL and register that URL with a prim-dns web service instance
@@ -11,7 +11,7 @@
  */
 
 /* The version of prim-dns. */
-string version = "2.5.0";
+string version = "2.6.0";
 
 /* The name of the configuration notecard. */
 string config_notecard = "prim-dns config";
@@ -493,6 +493,12 @@ state request_url
             log("URL request granted: " + temporary_url);
             jsonrpc_link_notification(LINK_SET, "prim-dns:url-request-granted", JSON_OBJECT, ["url", temporary_url]);
             
+            /* If prim_dns_api is unset, don't use any prim-dns web service. */
+            if (prim_dns_api == "")
+            {
+                state main;
+            }
+            
             /* Use the obtained temporary URL and auth string to update the permanent URL alias */
             
             /* Create the headers for the request. */
@@ -766,16 +772,19 @@ state main
             text += "\n" + get_stats();
             text += "\nURL: " + temporary_url;
             
-            string alias;
-            if (prim_dns_alias == "")
+            if (prim_dns_api != "")
             {
-                alias = llGetKey();
+                string alias;
+                if (prim_dns_alias == "")
+                {
+                    alias = llGetKey();
+                }
+                else
+                {
+                    alias = prim_dns_alias;
+                }
+                text += "\nAlias: " + prim_dns_api + "/" + alias;
             }
-            else
-            {
-                alias = prim_dns_alias;
-            }
-            text += "\nAlias: " + prim_dns_api + "/" + alias;
             
             llDialog(id, text, ["OK"], dialog_channel);
         }
