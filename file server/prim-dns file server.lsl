@@ -1,10 +1,14 @@
-/* prim-dns file server, version 1.0.0 */
-
-/* The prefix for scripts which will act as caches for the file server. */
-string cache_prefix = "prim-dns file server cache";
+/* prim-dns file server v1.1.0
+ *
+ * This script is a request handler script which will serve specially-named
+ * notecards in the prim's inventory as "files".
+ */
 
 /* The name used for the index notecard in each "directory". Note: XHTML is preferred because HTML can only be used by the internal SL browser, and only works for the owner of the linkset. */
 string index_notecard = "index.xhtml";
+
+/* The prefix for scripts which will act as caches for the file server. */
+string cache_prefix = "prim-dns file server cache";
 
 /* A list of cached notecards, the contents of which are stored in the cache scripts. */
 list cached_notecards;
