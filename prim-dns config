@@ -1,4 +1,4 @@
-# The URL for the prim-dns API
+# The URL for the prim-dns API. Leave blank to disable the use of any prim-dns web service.
 api = https://annapuddles.com/prim-dns/alias
 
 # The name of the alias to register/update. If none is specified, the key of the prim is used.
