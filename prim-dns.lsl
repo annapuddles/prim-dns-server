@@ -1,5 +1,17 @@
+/* prim-dns v2.5.0
+ *
+ * The prim-dns server script is a modular SecondLife script that will request
+ * a temporary URL and register that URL with a prim-dns web service instance
+ * to automatically create a permanent alias, which client scripts can use to
+ * find the current temporary URL of the server at any given time. This allows
+ * you to quickly add robust HTTP server functionality to any prim, and the
+ * modular design means the core script can be updated without needing to edit
+ * your own code, and different functions of a server can be split across
+ * multiple scripts for easier management.
+ */
+
 /* The version of prim-dns. */
-string version = "2.4.0";
+string version = "2.5.0";
 
 /* The name of the configuration notecard. */
 string config_notecard = "prim-dns config";
@@ -263,6 +275,23 @@ string get_stats()
     
     return stats;
 }
+
+process_configuration_notecard_line(string data)
+{
+    /* Ignore lines that start with #, treating them as comments */
+    if (llGetSubString(data, 0, 1) != "#")
+    {
+        list parts = llParseStringKeepNulls(data, [" = "], []);
+        
+        if (llGetListLength(parts) == 2)
+        {
+            string setting = llList2String(parts, 0);
+            string value = llList2String(parts, 1);
+            
+            change_setting(setting, value);
+        }
+    }
+}
  
 default
 {
@@ -326,11 +355,8 @@ state read_configuration
         prim_dns_alias = "";
         prim_dns_auth = "";
         
-        /* Reset the notecard line counter to 0. */
-        config_notecard_line = 0;
-        
         /* Read the first line of the notecard. */
-        config_notecard_query_id = llGetNotecardLine(config_notecard, config_notecard_line++);
+        config_notecard_query_id = llGetNotecardLine(config_notecard, config_notecard_line = 0);
     }
     
     /* Read each line of the config notecard. */
@@ -341,29 +367,25 @@ state read_configuration
         {
             return;
         }
+
+        /* Attempt to read the notecard synchronously, if it is in the region cache. */
+        while (data != EOF && data != NAK)
+        {
+            data = llGetNotecardLineSync(config_notecard, ++config_notecard_line);
+            process_configuration_notecard_line(data);
+        }
+
+        /* If the notecard is not in the region cache, read it asynchronously. */
+        if (data == NAK)
+        {
+            config_notecard_query_id = llGetNotecardLine(config_notecard, ++config_notecard_line);
+        }
         
         /* If there are no more lines to read, stop. */
         if (data == EOF)
         {
             state startup;
         }
-        
-        /* Ignore lines that start with #, treating them as comments */
-        if (llGetSubString(data, 0, 1) != "#")
-        {
-            list parts = llParseStringKeepNulls(data, [" = "], []);
-            
-            if (llGetListLength(parts) == 2)
-            {
-                string setting = llList2String(parts, 0);
-                string value = llList2String(parts, 1);
-                
-                change_setting(setting, value);
-            }
-        }
-        
-        /* Read the next line */
-        config_notecard_query_id = llGetNotecardLine(config_notecard, config_notecard_line++);
     }
     
     state_exit()
