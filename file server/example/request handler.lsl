@@ -24,14 +24,22 @@ default
         
         if (jsonrpc_method == "prim-dns:request")
         {
+            /* The ID of the HTTP request. */
             key request_id = (key) llJsonGetValue(str, ["params", "request-id"]);
+            
+            /* The method of the HTTP request (GET, POST). */
             string method = llJsonGetValue(str, ["params", "method"]);
+            
+            /* The headers of the HTTP request, as a JSON object. */
             string headers = llJsonGetValue(str, ["params", "headers"]);
+            
+            /* The body of the HTTP request. */
             string body = llJsonGetValue(str, ["params", "body"]);
             
             /* Get the path from the headers and use it to determine the response. */
             string path = llJsonGetValue(headers, ["x-path-info"]);
             
+            /* /agents/agents.json: Return a list of details about avatars in the region. */
             if (path == "/agents/agents.json")
             {
                 list agents = llGetAgentList(AGENT_LIST_REGION, []);
@@ -43,10 +51,13 @@ default
                 {
                     key agent = llList2Key(agents, i);
                     
+                    list details = llGetObjectDetails(agent, [OBJECT_POS]);
+                    
                     agentList += llList2Json(JSON_OBJECT, [
                         "key", agent,
                         "username", llGetUsername(agent),
-                        "displayName", llGetDisplayName(agent)
+                        "displayName", llGetDisplayName(agent),
+                        "position", llList2Vector(details, 0)
                     ]);
                 }
 
