@@ -1,4 +1,4 @@
-/* prim-dns v2.6.0
+/* prim-dns v2.6.1
  *
  * The prim-dns server script is a modular SecondLife script that will request
  * a temporary URL and register that URL with a prim-dns web service instance
@@ -11,7 +11,7 @@
  */
 
 /* The version of prim-dns. */
-string version = "2.6.0";
+string version = "2.6.1";
 
 /* The name of the configuration notecard. */
 string config_notecard = "prim-dns config";
@@ -270,7 +270,7 @@ string get_stats()
     stats += "Uptime: " + time_to_string(llGetTime()) + "\n";
     
     integer data_avail = llLinksetDataAvailable();
-    integer data_percent = (integer) (data_avail / 131072 * 100);
+    integer data_percent = (integer) (data_avail / 131072.0 * 100);
     stats += "Storage Remaining: " + (string) data_percent + "% (" + (string) ((integer) (data_avail / 1024)) + " KiB / 128 KiB)";
     
     return stats;
