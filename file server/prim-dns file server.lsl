@@ -1,4 +1,4 @@
-/* prim-dns file server v1.1.0
+/* prim-dns file server v1.2.0
  *
  * This script is a request handler script which will serve specially-named
  * notecards in the prim's inventory as "files".
@@ -241,7 +241,10 @@ default
         {
             string path = llJsonGetValue(str, ["params", "path"]);
             
-            registered_paths += path;
+            if (llListFindList(registered_paths, [path]) == -1)
+            {
+                registered_paths += path;
+            }
         }
     }
 }
