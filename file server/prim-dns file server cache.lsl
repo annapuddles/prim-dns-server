@@ -1,4 +1,11 @@
-/* prim-dns file server cache script, version 1.1.0 */
+/* prim-dns file server cache script v1.1.1
+ *
+ * This script stores the contents of notecards in the inventory in memory, for
+ * faster access when responding to an HTTP request.
+ *
+ * You may add as many cache scripts to your server as you like (within the
+ * overall SL script limit) to increase the maximum size of the cache.
+ */
 
 /* The content of the current notecard being read. */
 string notecard_content;
@@ -15,20 +22,11 @@ string notecard_name;
 /* The index of the last notecard that this cache script should read. */
 integer max_notecard_index;
 
+/* The query ID for dataserver event. */
 key notecard_query;
 
 /* A strided list of notecard names and their contents. */
 list cache;
-
-string jsonrpc_notification(string method, string params_type, list params)
-{
-    return llList2Json(JSON_OBJECT, ["jsonrpc", "2.0", "method", method, "params", llList2Json(params_type, params)]);
-}
-
-jsonrpc_link_notification(integer link, string method, string params_type, list params)
-{
-    llMessageLinked(link, 0, jsonrpc_notification(method, params_type, params), NULL_KEY);
-}
 
 /* Read the next notecard into the cache. */
 read_next_notecard()
@@ -47,25 +45,13 @@ read_next_notecard()
     }
 }
 
-/* Send a cached notecard's contents back to the main script if this script has it. */
-send_cached_notecard(integer sender, key request_id, string name)
-{
-    integer index = llListFindList(cache, [name]);
-    
-    if (index == -1)
-    {
-        return;
-    }
-        
-    jsonrpc_link_notification(sender, "prim-dns:file-server:cache:response", JSON_OBJECT, ["request-id", request_id, "body", llList2String(cache, index + 1)]);
-}
-
 default
 {
     link_message(integer sender, integer num, string str, key id)
     {
         string method = llJsonGetValue(str, ["method"]);
         
+        /* Read designated notecards from the inventory into the cache. */
         if (method == "prim-dns:file-server:cache:read")
         {
             string script = llJsonGetValue(str, ["params", "script"]);
@@ -82,12 +68,20 @@ default
                                     
             read_next_notecard();
         }
+        /* Send a cached notecard's contents back to the main script if this script has it. */
         else if (method == "prim-dns:file-server:cache:send")
         {
             key request_id = (key) llJsonGetValue(str, ["params", "request-id"]);
             string name = llJsonGetValue(str, ["params", "name"]);
-                        
-            send_cached_notecard(sender, request_id, name);
+            
+            integer index = llListFindList(cache, [name]);
+            
+            if (index == -1)
+            {
+                return;
+            }
+            
+            llMessageLinked(sender, 0, llList2Json(JSON_OBJECT, ["jsonrpc", "2.0", "method", "prim-dns:file-server:cache:response", "params", llList2Json(JSON_OBJECT, ["request-id", request_id, "body", llList2String(cache, index + 1)])]), NULL_KEY);
         }
     }
     
