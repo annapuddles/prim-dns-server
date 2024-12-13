@@ -1,5 +1,9 @@
 /* This script handles requests to special paths which return dynamic responses using LSL. */
 
+/* The following functions are taken from
+ * https://github.com/annapuddles/jsonrpc-sl and are used to create and send
+ * JSON-RPC notifications via link message.
+ */
 string jsonrpc_notification(string method, string params_type, list params)
 {
     return llList2Json(JSON_OBJECT, ["jsonrpc", "2.0", "method", method, "params", llList2Json(params_type, params)]);
@@ -12,17 +16,22 @@ jsonrpc_link_notification(integer link, string method, string params_type, list 
 
 default
 {
-    state_entry()
-    {
-        /* Register the paths this script will handle instead of the file server. */
-        jsonrpc_link_notification(LINK_SET, "prim-dns:file-server:register-path", JSON_OBJECT, ["path", "/agents/agents.json"]);
-    }
-    
     link_message(integer sender, integer num, string str, key id)
     {
         string jsonrpc_method = llJsonGetValue(str, ["method"]);
         
-        if (jsonrpc_method == "prim-dns:request")
+        /* Register the paths this script will handle instead of the file server.
+         *
+         * This really only needs to be done once, after the file server script
+         * starts, but just in case we'll register it each time the server starts
+         * up.
+         */
+        if (jsonrpc_method == "prim-dns:startup")
+        {
+            jsonrpc_link_notification(LINK_SET, "prim-dns:file-server:register-path", JSON_OBJECT, ["path", "/agents/agents.json"]);
+        }
+        /* Handle requests forwarded from the main prim-dns script. */
+        else if (jsonrpc_method == "prim-dns:request")
         {
             /* The ID of the HTTP request. */
             key request_id = (key) llJsonGetValue(str, ["params", "request-id"]);
