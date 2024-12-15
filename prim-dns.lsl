@@ -1,4 +1,4 @@
-/* prim-dns v2.6.1
+/* prim-dns v2.7.0
  *
  * The prim-dns server script is a modular SecondLife script that will request
  * a temporary URL and register that URL with a prim-dns web service instance
@@ -10,8 +10,10 @@
  * multiple scripts for easier management.
  */
 
+/* CONFIGURATION */
+
 /* The version of prim-dns. */
-string version = "2.6.1";
+string version = "2.7.0";
 
 /* The name of the configuration notecard. */
 string config_notecard = "prim-dns config";
@@ -52,6 +54,16 @@ integer enable_chat_output = TRUE;
 /* Whether to automatically reboot on inventory change. */
 integer auto_reboot = FALSE;
 
+/* Text labels for dialogs. */
+string power_on_label = "⏻ power on";
+string cancel_label = "❌ cancel";
+string reboot_label = "🔄 reboot";
+string shutdown_label = "🛑 shutdown";
+string info_label = "🖥️ info";
+string ok_label = "✅ OK";
+
+/* END OF CONFIGURATION */
+
 /* The actual temporary prim URL assigned by llRequestURL */
 string temporary_url;
 
@@ -69,19 +81,6 @@ integer dialog_channel;
 
 /* Listener for dialogs. */
 integer dialog_listener;
-
-/* Request a URL, either secure or insecure based on the use_secure_url setting. */
-start_url_request()
-{
-    if (use_secure_url)
-    {
-        llRequestSecureURL();
-    }
-    else
-    {
-        llRequestURL();
-    }
-}
 
 /* Log messages to chat if enabled. */
 log(string text)
@@ -187,14 +186,9 @@ change_setting(string setting, string value)
 }
 
 /* JSON-RPC functions */
-string jsonrpc_notification(string method, string params_type, list params)
-{
-    return llList2Json(JSON_OBJECT, ["jsonrpc", "2.0", "method", method, "params", llList2Json(params_type, params)]);
-}
-
 jsonrpc_link_notification(integer link, string method, string params_type, list params)
 {
-    llMessageLinked(link, 0, jsonrpc_notification(method, params_type, params), NULL_KEY);
+    llMessageLinked(link, 0, llList2Json(JSON_OBJECT, ["jsonrpc", "2.0", "method", method, "params", llList2Json(params_type, params)]), NULL_KEY);
 }
 
 /* The names of all the possible headers in a request. */
@@ -267,11 +261,11 @@ string get_stats()
 {
     string stats;
     
-    stats += "Uptime: " + time_to_string(llGetTime()) + "\n";
+    stats += "⏱️ Uptime: " + time_to_string(llGetTime()) + "\n";
     
     integer data_avail = llLinksetDataAvailable();
     integer data_percent = (integer) (data_avail / 131072.0 * 100);
-    stats += "Storage Remaining: " + (string) data_percent + "% (" + (string) ((integer) (data_avail / 1024)) + " KiB / 128 KiB)";
+    stats += "💽 Storage Remaining: " + (string) data_percent + "% (" + (string) ((integer) (data_avail / 1024)) + " KiB / 128 KiB)";
     
     return stats;
 }
@@ -292,13 +286,15 @@ process_configuration_notecard_line(string data)
         }
     }
 }
- 
+
 default
 {
     state_entry()
     {
         /* Get a unique channel number based on the object's key. */
         dialog_channel = 0x80000000 | (integer)("0x"+(string)llGetKey());
+        
+        llOwnerSay("Free memory: " + (string) llGetFreeMemory());
         
         state off;
     }
@@ -309,7 +305,7 @@ state off
 {
     state_entry()
     {
-        set_text("Touch to start");
+        set_text("⏻ Touch to start");
     }
     
     touch_end(integer detected)
@@ -323,14 +319,14 @@ state off
         
         llListenRemove(dialog_listener);
         dialog_listener = llListen(dialog_channel, "", toucher, "");
-        llDialog(toucher, "prim-dns v" + version, ["power on", "cancel"], dialog_channel);
+        llDialog(toucher, "prim-dns v" + version, [power_on_label, cancel_label], dialog_channel);
     }
     
     listen(integer channel, string name, key id, string message)
     {
         llListenRemove(dialog_listener);
         
-        if (message == "power on")
+        if (message == power_on_label)
         {
             state read_configuration;
         }
@@ -342,7 +338,7 @@ state read_configuration
 {
     state_entry()
     {
-        set_text("Reading configuration...");
+        set_text("📄 Reading configuration...");
         jsonrpc_link_notification(LINK_SET, "prim-dns:read-config-start", JSON_OBJECT, []);
         
         /* If the config notecard doesn't exist, abort. */
@@ -400,7 +396,7 @@ state startup
 {
     state_entry()
     {
-        set_text("Waiting for startup...");
+        set_text("🕙 Waiting for startup...");
         
         jsonrpc_link_notification(LINK_SET, "prim-dns:startup", JSON_OBJECT, []);
         
@@ -445,7 +441,7 @@ state startup
         
         llListenRemove(dialog_listener);
         dialog_listener = llListen(dialog_channel, "", toucher, "");
-        llDialog(toucher, "prim-dns v" + version, ["reboot", "shutdown", "cancel"], dialog_channel);
+        llDialog(toucher, "prim-dns v" + version, [reboot_label, shutdown_label, cancel_label], dialog_channel);
     }
     
     /* Handle the response from the options menu. */
@@ -453,11 +449,11 @@ state startup
     {
         llListenRemove(dialog_listener);
         
-        if (message == "reboot")
+        if (message == reboot_label)
         {
             state reboot;
         }
-        else if (message == "shutdown")
+        else if (message == shutdown_label)
         {
             state shutdown;
         }
@@ -474,13 +470,20 @@ state request_url
 {
     state_entry()
     {
-        set_text("Requesting URL...");
+        set_text("🛜 Requesting URL...");
         
         /* Release any current temporary URL in use. */
         llReleaseURL(temporary_url);
         
-        /* Request a new URL. */
-        start_url_request();
+        /* Request a URL, either secure or insecure based on the use_secure_url setting. */
+        if (use_secure_url)
+        {
+            llRequestSecureURL();
+        }
+        else
+        {
+            llRequestURL();
+        }
     }
     
     /* Handle HTTP requests made to this prim. */
@@ -601,7 +604,7 @@ state request_url
         
         llListenRemove(dialog_listener);
         dialog_listener = llListen(dialog_channel, "", toucher, "");
-        llDialog(toucher, "prim-dns v" + version, ["reboot", "shutdown", "cancel"], dialog_channel);
+        llDialog(toucher, "prim-dns v" + version, [reboot_label, shutdown_label, cancel_label], dialog_channel);
     }
     
     /* Handle the response from the options menu. */
@@ -609,11 +612,11 @@ state request_url
     {
         llListenRemove(dialog_listener);
         
-        if (message == "reboot")
+        if (message == reboot_label)
         {
             state reboot;
         }
-        else if (message == "shutdown")
+        else if (message == shutdown_label)
         {
             state shutdown;
         }
@@ -640,7 +643,7 @@ state main
     state_entry()
     {
         llResetTime();
-        set_text("Ready!");
+        set_text("✅ Ready!");
         jsonrpc_link_notification(LINK_SET, "prim-dns:startup-complete", JSON_OBJECT, []);
         if (status_update_interval > 0)
         {
@@ -750,7 +753,7 @@ state main
         
         llListenRemove(dialog_listener);
         dialog_listener = llListen(dialog_channel, "", toucher, "");
-        llDialog(toucher, "prim-dns v" + version, [" ", "cancel", " ", "info", "reboot", "shutdown"], dialog_channel);
+        llDialog(toucher, "prim-dns v" + version, [" ", "cancel", " ", info_label, reboot_label, shutdown_label], dialog_channel);
     }
     
     /* Handle the response from the options menu. */
@@ -758,19 +761,19 @@ state main
     {
         llListenRemove(dialog_listener);
         
-        if (message == "reboot")
+        if (message == reboot_label)
         {
             state reboot;
         }
-        else if (message == "shutdown")
+        else if (message == shutdown_label)
         {
             state shutdown;
         }
-        else if (message == "info")
+        else if (message == info_label)
         {
             string text = "prim-dns v" + version;
-            text += "\n" + get_stats();
-            text += "\nURL: " + temporary_url;
+            text += "\n\n" + get_stats();
+            text += "\n\n🌎 URL: " + temporary_url;
             
             if (prim_dns_api != "")
             {
@@ -783,10 +786,10 @@ state main
                 {
                     alias = prim_dns_alias;
                 }
-                text += "\nAlias: " + prim_dns_api + "/" + alias;
+                text += "\n\n🪪 Alias: " + prim_dns_api + "/" + alias;
             }
             
-            llDialog(id, text, ["OK"], dialog_channel);
+            llDialog(id, text, [ok_label], dialog_channel);
         }
     }
 }
@@ -795,7 +798,7 @@ state reboot
 {
     state_entry()
     {
-        set_text("Rebooting...");
+        set_text("🔄 Rebooting...");
         jsonrpc_link_notification(LINK_SET, "prim-dns:shutting-down", JSON_OBJECT, []);
         state read_configuration;
     }
@@ -810,7 +813,7 @@ state shutdown
 {
     state_entry()
     {
-        set_text("Shutting down...");
+        set_text("🛑 Shutting down...");
         jsonrpc_link_notification(LINK_SET, "prim-dns:shutting-down", JSON_OBJECT, []);
         state off;
     }
