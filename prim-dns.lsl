@@ -1,4 +1,4 @@
-/* prim-dns v2.7.1
+/* prim-dns v2.8.0
  *
  * The prim-dns server script is a modular SecondLife script that will request
  * a temporary URL and register that URL with a prim-dns web service instance
@@ -13,7 +13,15 @@
 /* CONFIGURATION */
 
 /* The version of prim-dns. */
-string version = "2.7.1";
+string version = "2.8.0";
+
+/* Text labels for dialogs. */
+string power_on_label = "⏻ power on";
+string cancel_label = "❌ cancel";
+string reboot_label = "🔄 reboot";
+string shutdown_label = "🛑 shutdown";
+string info_label = "🖥️ info";
+string ok_label = "✅ OK";
 
 /* The name of the configuration notecard. */
 string config_notecard = "prim-dns config";
@@ -53,14 +61,6 @@ integer enable_chat_output = TRUE;
 
 /* Whether to automatically reboot on inventory change. */
 integer auto_reboot = FALSE;
-
-/* Text labels for dialogs. */
-string power_on_label = "⏻ power on";
-string cancel_label = "❌ cancel";
-string reboot_label = "🔄 reboot";
-string shutdown_label = "🛑 shutdown";
-string info_label = "🖥️ info";
-string ok_label = "✅ OK";
 
 /* END OF CONFIGURATION */
 
@@ -266,10 +266,15 @@ string get_stats()
     string stats;
     
     stats += "⏱️ Uptime: " + time_to_string(llGetTime()) + "\n";
+
+    integer mem_avail = llGetFreeMemory();
+    integer mem_limit = llGetMemoryLimit();
+    integer mem_percent = (integer) (mem_avail * 1.0 / mem_limit * 100);
+    stats += "📊 Memory Remaining: " + (string) mem_percent + "% (" + (string) ((integer) (mem_avail / 1024.0)) + " / " + (string) ((integer) (mem_limit / 1024.0)) + " KiB)\n";
     
     integer data_avail = llLinksetDataAvailable();
     integer data_percent = (integer) (data_avail / 131072.0 * 100);
-    stats += "💽 Storage Remaining: " + (string) data_percent + "% (" + (string) ((integer) (data_avail / 1024)) + " KiB / 128 KiB)";
+    stats += "💽 Storage Remaining: " + (string) data_percent + "% (" + (string) ((integer) (data_avail / 1024.0)) + " / 128 KiB)";
     
     return stats;
 }
