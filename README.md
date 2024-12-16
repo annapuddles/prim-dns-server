@@ -214,3 +214,8 @@ link_message(integer sender, integer num, string str, key id)
     }
 }
 ```
+
+# Known issues / Future improvements
+
+- The amount of data you can send in a response is limited by the amount of memory available to the core prim-dns script. Therefore, this script needs to be as memory-efficient as possible, but without sacrificing the user interface.
+  - There could be a second script which actually requests URLs and handles requests and responses, and that script would have more memory to work with. However, it would also be necessary to use multiple prims in order to prevent the core script from receiving link messages that would exceed the memory available to it.
