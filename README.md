@@ -2,7 +2,9 @@
 
 The prim-dns server script is a modular SecondLife script that will request a temporary URL and register that URL with a [prim-dns web service](https://github.com/annapuddles/prim-dns) instance to automatically create a permanent alias, which client scripts can use to find the current temporary URL of the server at any given time. This allows you to quickly add robust HTTP server functionality to any prim, and the modular design means the core script can be updated without needing to edit your own code, and different functions of a server can be split across multiple scripts for easier management.
 
-You can grab the core prim-dns script along with several examples here: https://marketplace.secondlife.com/p/prim-dns/24388106
+You can grab the core prim-dns script along with several examples [here](https://marketplace.secondlife.com/p/prim-dns/24388106).
+
+A working version of the [example file server](file%20server/example) can be viewed [here](https://annapuddles.com/prim-dns/redirect/prim-dns-examples).
 
 # prim-dns server diagram
 
