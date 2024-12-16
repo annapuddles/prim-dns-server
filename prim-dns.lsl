@@ -1,4 +1,4 @@
-/* prim-dns v2.7.0
+/* prim-dns v2.7.1
  *
  * The prim-dns server script is a modular SecondLife script that will request
  * a temporary URL and register that URL with a prim-dns web service instance
@@ -13,7 +13,7 @@
 /* CONFIGURATION */
 
 /* The version of prim-dns. */
-string version = "2.7.0";
+string version = "2.7.1";
 
 /* The name of the configuration notecard. */
 string config_notecard = "prim-dns config";
@@ -182,6 +182,10 @@ change_setting(string setting, string value)
     else if (setting == "enable_chat_output")
     {
         enable_chat_output = (integer) value;
+    }
+    else if (setting == "auto_reboot")
+    {
+        auto_reboot = (integer) value;
     }
 }
 
