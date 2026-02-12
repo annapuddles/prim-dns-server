@@ -1,4 +1,4 @@
-/* prim-dns v2.8.0
+/* prim-dns v3.0.0
  *
  * The prim-dns server script is a modular SecondLife script that will request
  * a temporary URL and register that URL with a prim-dns web service instance
@@ -13,7 +13,7 @@
 /* CONFIGURATION */
 
 /* The version of prim-dns. */
-string version = "2.8.0";
+string version = "3.0.0";
 
 /* Text labels for dialogs. */
 string power_on_label = "⏻ power on";
@@ -27,7 +27,7 @@ string ok_label = "✅ OK";
 string config_notecard = "prim-dns config";
 
 /* The URL of the prim-dns webservice. */
-string prim_dns_api = "https://annapuddles.com/prim-dns/alias";
+string prim_dns_api = "https://annapuddles.com/prim-dns";
 
 /* The alias registered on the prim-dns service. If blank, the object key will be used. */
 string prim_dns_alias;
@@ -539,7 +539,7 @@ state request_url
             ];
             
             /* Make the request to the prim-dns webservice. */
-            prim_dns_request_id = llHTTPRequest(prim_dns_api, headers, llList2Json(JSON_OBJECT, body));
+            prim_dns_request_id = llHTTPRequest(prim_dns_api + "/alias", headers, llList2Json(JSON_OBJECT, body));
         }
         /* If for some reason the SecondLife server denied the request, display the reason */
         else if (method == URL_REQUEST_DENIED)
@@ -795,7 +795,8 @@ state main
                 {
                     alias = prim_dns_alias;
                 }
-                text += "\n\n🪪 Alias: " + prim_dns_api + "/" + alias;
+                text += "\n\n🪪 Alias: " + prim_dns_api + "/alias/" + alias;
+                text += "\n\n🔗 Redirect: " + prim_dns_api + "/redirect/" + alias;
             }
             
             llDialog(id, text, [ok_label], dialog_channel);
